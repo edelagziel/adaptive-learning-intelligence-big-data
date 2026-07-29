@@ -1,3 +1,16 @@
+"""
+Synthetic learning-events Kafka producer.
+
+Event taxonomy note:
+- The Bronze table schema allows any STRING value for event_type.
+- The Bronze quality layer enforces the approved taxonomy:
+  ai_learning_interaction and practice_submitted.
+- This producer emits practice_submitted to align with that architecture.
+- Historical test rows already ingested with event_type=practice_attempt remain
+  unchanged in Bronze and may still trigger a quality FAIL until cleaned or
+  retained as a quarantine demonstration.
+"""
+
 import json
 import time
 import uuid
@@ -29,7 +42,7 @@ def create_learning_event(event_number: int) -> dict:
         "event_id": f"stream_{uuid.uuid4().hex[:12]}",
         "user_id": f"user_{(event_number % 3) + 1}",
         "session_id": f"stream_session_{event_number:03d}",
-        "event_type": "practice_attempt",
+        "event_type": "practice_submitted",
         "topic_id": f"topic_{(event_number % 5) + 1}",
         "question_id": f"question_{(event_number % 5) + 1}",
         "attempt_number": 1,
