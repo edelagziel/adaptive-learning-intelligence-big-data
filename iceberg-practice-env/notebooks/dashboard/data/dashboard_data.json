@@ -1,0 +1,196 @@
+{
+  "generated_at": "2026-07-29T19:25:39.404857Z",
+  "kpis": {
+    "at_risk_learners": 2,
+    "average_mastery": 0.6872333238522211,
+    "total_learners": 3,
+    "total_learning_events": 6,
+    "total_practice_attempts": 5,
+    "weak_concepts": 2
+  },
+  "learner_risk": [
+    {
+      "learner_id": "Learner 1",
+      "main_signal": "Model probability",
+      "model_version": "learning_difficulty_model_20260729_191931_247576",
+      "prediction_created_at": "2026-07-29T19:19:33.486083Z",
+      "risk_level": "High",
+      "risk_score": 1.0
+    },
+    {
+      "learner_id": "Learner 2",
+      "main_signal": "Model probability",
+      "model_version": "learning_difficulty_model_20260729_191931_247576",
+      "prediction_created_at": "2026-07-29T19:19:33.486083Z",
+      "risk_level": "High",
+      "risk_score": 1.0
+    },
+    {
+      "learner_id": "Learner 3",
+      "main_signal": "Model probability",
+      "model_version": "learning_difficulty_model_20260729_191931_247576",
+      "prediction_created_at": "2026-07-29T19:19:33.486083Z",
+      "risk_level": "Low",
+      "risk_score": 0.0
+    }
+  ],
+  "learning_gap": [
+    {
+      "concept": "Recursion",
+      "confidence_after": 5,
+      "confidence_before": 9,
+      "gap_level": "High",
+      "illusion_gap_score": 0.4000000059604645,
+      "practice_score": 0.5
+    },
+    {
+      "concept": "Virtual Memory",
+      "confidence_after": 5,
+      "confidence_before": 4,
+      "gap_level": "Low",
+      "illusion_gap_score": -0.10000000149011612,
+      "practice_score": 0.5
+    },
+    {
+      "concept": "Process Memory Layout",
+      "confidence_after": 9,
+      "confidence_before": 7,
+      "gap_level": "Low",
+      "illusion_gap_score": -0.30000001192092896,
+      "practice_score": 1.0
+    }
+  ],
+  "learning_progress": [
+    {
+      "average_mastery": null,
+      "average_score": 0.5,
+      "event_count": 2,
+      "period": "2026-07-20"
+    },
+    {
+      "average_mastery": null,
+      "average_score": 0.5,
+      "event_count": 2,
+      "period": "2026-07-21"
+    },
+    {
+      "average_mastery": 0.8999999761581421,
+      "average_score": 1.0,
+      "event_count": 1,
+      "period": "2026-07-22"
+    },
+    {
+      "average_mastery": 0.699999988079071,
+      "average_score": null,
+      "event_count": 0,
+      "period": "2026-07-23"
+    },
+    {
+      "average_mastery": null,
+      "average_score": null,
+      "event_count": 0,
+      "period": "2026-07-24"
+    },
+    {
+      "average_mastery": 0.6000000238418579,
+      "average_score": null,
+      "event_count": 0,
+      "period": "2026-07-25"
+    },
+    {
+      "average_mastery": 0.6411333084106445,
+      "average_score": null,
+      "event_count": 0,
+      "period": "2026-07-28"
+    },
+    {
+      "average_mastery": 0.6411333084106445,
+      "average_score": null,
+      "event_count": 0,
+      "period": "2026-07-29"
+    }
+  ],
+  "metadata": {
+    "ml_prediction_selection": {
+      "fallback_key_count": 0,
+      "fallback_note": null,
+      "feature_deduplicated_rows": 3,
+      "feature_source_rows": 3,
+      "latest_rows": 3,
+      "selection_rule": "row_number over user_key, topic_key, session_id ordered by prediction_created_at DESC, then model_version DESC, then stable row hash",
+      "source_rows": 18
+    },
+    "tables_read": [
+      "demo.gold.agg_illusion_of_learning",
+      "demo.gold.agg_learning_progress_daily",
+      "demo.gold.dim_learner",
+      "demo.gold.dim_topic",
+      "demo.gold.fact_learner_concept_state",
+      "demo.gold.fact_learning_interaction",
+      "demo.gold.fact_practice_attempt",
+      "demo.gold.ml_learning_difficulty_features",
+      "demo.gold.ml_learning_difficulty_predictions",
+      "demo.quality.bronze_quality_results",
+      "demo.quality.bronze_quarantine",
+      "demo.quality.silver_quality_results",
+      "demo.quality.silver_quarantine"
+    ],
+    "unavailable_tables": {}
+  },
+  "pipeline_status": [
+    {
+      "component": "Gold metrics",
+      "details": "Gold tables were readable. This indicates availability, not that Gold quality passed.",
+      "status": "Available"
+    },
+    {
+      "component": "ML output",
+      "details": "Latest prediction selection exported. prediction_created_at was available for latest selection.",
+      "status": "Available"
+    },
+    {
+      "component": "Quality results",
+      "details": "Bronze/Silver quality result and quarantine tables were readable. Gold quality results are not persisted by the current pipeline.",
+      "status": "Available"
+    },
+    {
+      "component": "Dashboard JSON",
+      "details": "Generated at 2026-07-29T19:25:39.404857Z.",
+      "status": "Available"
+    }
+  ],
+  "quality_summary": {
+    "fail_count": 1,
+    "pass_count": 162,
+    "quarantine_count_label": "unresolved_quarantined_rows",
+    "quarantine_logic": "Counted statuses matching unresolved/open values: OPEN.",
+    "quarantine_status_values": [
+      "OPEN"
+    ],
+    "quarantined_rows": 13,
+    "warning_count": 0
+  },
+  "status": "success",
+  "weakest_concepts": [
+    {
+      "concept": "Virtual Memory",
+      "learner_count": 2,
+      "mastery_score": 0.5283499956130981
+    },
+    {
+      "concept": "Recursion",
+      "learner_count": 2,
+      "mastery_score": 0.6333500146865845
+    },
+    {
+      "concept": "Memory Layout",
+      "learner_count": 1,
+      "mastery_score": 0.8999999761581421
+    },
+    {
+      "concept": "Process Memory Layout",
+      "learner_count": 1,
+      "mastery_score": 0.8999999761581421
+    }
+  ]
+}

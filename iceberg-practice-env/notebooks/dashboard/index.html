@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ALI Learning Data Analytics Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">ALI pipeline demo</p>
+        <h1>ALI Learning Data Analytics Dashboard</h1>
+        <p class="subtitle">Monitoring learner progress, weaknesses, evidence gaps, data quality, and predicted learning risk.</p>
+      </div>
+      <div class="header-actions">
+        <p id="generatedAt" class="generated-at">Generated: not loaded</p>
+        <button id="refreshButton" type="button" aria-label="Reload dashboard data">Refresh data</button>
+      </div>
+    </header>
+
+    <main>
+      <section aria-labelledby="kpi-heading">
+        <h2 id="kpi-heading">Learning Overview</h2>
+        <div id="kpiGrid" class="kpi-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="dashboard-grid" aria-label="Learning analytics">
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Weakest Concepts</h2>
+            <span class="badge">Gold</span>
+          </div>
+          <div id="weakestConcepts" class="bar-list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Learning Progress</h2>
+            <span class="badge">Daily</span>
+          </div>
+          <div id="progressChart" class="chart-box"></div>
+        </article>
+      </section>
+
+      <section class="dashboard-grid" aria-label="Risk and evidence">
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>ML Predicted Learning Risk</h2>
+            <span class="badge">Latest</span>
+          </div>
+          <div id="learnerRisk"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Learning Evidence Gap</h2>
+            <span class="badge">Confidence vs practice</span>
+          </div>
+          <div id="learningGap"></div>
+        </article>
+      </section>
+
+      <section class="dashboard-grid" aria-label="Quality and pipeline status">
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Data Quality</h2>
+            <span class="badge">Bronze and Silver</span>
+          </div>
+          <div id="qualitySummary" class="quality-grid"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Pipeline Status</h2>
+            <span id="dataStatus" class="badge">Loading</span>
+          </div>
+          <div id="pipelineStatus"></div>
+        </article>
+      </section>
+
+      <section id="errorPanel" class="error-panel" hidden>
+        <h2>Dashboard data unavailable</h2>
+        <p id="errorMessage"></p>
+      </section>
+    </main>
+
+    <script src="dashboard.js"></script>
+  </body>
+</html>
