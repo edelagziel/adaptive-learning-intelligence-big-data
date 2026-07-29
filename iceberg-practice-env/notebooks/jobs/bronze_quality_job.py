@@ -279,7 +279,11 @@ def evaluate_rule(
     failed_df = failing_df_builder()
     failed_rows = failed_df.count()
     status = status_for(failed_rows, severity)
-    has_critical_failure = severity == SEVERITY_FAIL and failed_rows > 0
+    has_critical_failure = (
+        severity == SEVERITY_FAIL
+        and failed_rows > 0
+        and not supports_quarantine
+    )
 
     if failed_rows == 0:
         action_taken = "no_action"
@@ -765,11 +769,17 @@ def run_job(spark: SparkSession) -> int:
         fail_count,
     )
 
+    if fail_count > 0:
+        logger.warning(
+            "Bronze row-level FAIL rules were detected and written as quarantine audit copies. "
+            "Successfully quarantined row-level failures are non-blocking for this job."
+        )
+
     if critical_fail_detected:
-        logger.error("Critical FAIL rules detected with failed_rows > 0. Exiting with code 1.")
+        logger.error("Non-quarantinable critical Bronze quality failure detected. Exiting with code 1.")
         return 1
 
-    logger.info("No critical FAIL rules detected. Exiting with code 0.")
+    logger.info("No blocking Bronze quality failures detected. Exiting with code 0.")
     return 0
 
 

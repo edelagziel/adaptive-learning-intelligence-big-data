@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 SILVER_LEARNER_PROFILES = "demo.silver.learner_profiles"
 SILVER_CONTENT_TAXONOMY = "demo.silver.content_taxonomy"
 SILVER_REFERENCE_MATERIALS = "demo.silver.reference_materials"
+SILVER_QUARANTINE_TABLE = "demo.quality.silver_quarantine"
+OPEN_STATUS = "OPEN"
+NULL_PLACEHOLDER = "__NULL__"
 
 DIM_LEARNER = "demo.gold.dim_learner"
 DIM_TOPIC = "demo.gold.dim_topic"
@@ -45,6 +48,54 @@ def key_is_present(columns: Sequence[str]) -> F.Column:
 
 def stable_row_hash(columns: Sequence[str]) -> F.Column:
     return F.sha2(F.to_json(F.struct(*[F.col(column) for column in columns])), 256)
+
+
+def build_record_id_expr(columns: Sequence[str]) -> F.Column:
+    return F.concat_ws(
+        "||",
+        *[
+            F.coalesce(F.col(column).cast("string"), F.lit(NULL_PLACEHOLDER))
+            for column in columns
+        ],
+    )
+
+
+def silver_source_df(
+    spark: SparkSession,
+    source_table: str,
+    record_id_columns: Sequence[str],
+) -> DataFrame:
+    source_df = spark.table(source_table)
+    scoped_count = source_df.count()
+    open_quarantine_df = (
+        spark.table(SILVER_QUARANTINE_TABLE)
+        .filter(
+            (F.col("source_table") == source_table)
+            & (F.col("quarantine_status") == OPEN_STATUS)
+        )
+        .select(F.col("record_id").alias("_quality_record_id"))
+        .distinct()
+    )
+    clean_df = (
+        source_df
+        .withColumn("_quality_record_id", build_record_id_expr(record_id_columns))
+        .join(open_quarantine_df, "_quality_record_id", "left_anti")
+        .drop("_quality_record_id")
+    )
+    clean_count = clean_df.count()
+    logger.info(
+        "Silver quarantine exclusion | table=%s scoped_rows=%s open_quarantined_rows=%s valid_rows=%s",
+        source_table,
+        scoped_count,
+        scoped_count - clean_count,
+        clean_count,
+    )
+    if scoped_count > 0 and clean_count == 0:
+        logger.warning(
+            "Silver quarantine exclusion left zero valid rows | table=%s",
+            source_table,
+        )
+    return clean_df
 
 
 def valid_and_single_row(df: DataFrame, key_columns: Sequence[str], stage_name: str) -> DataFrame:
@@ -123,7 +174,11 @@ def current_max_key(spark: SparkSession, table_name: str, key_column: str) -> in
 
 def load_dim_learner(spark: SparkSession) -> None:
     logger.info("Stage start | dim_learner")
-    silver_df = spark.table(SILVER_LEARNER_PROFILES)
+    silver_df = silver_source_df(
+        spark,
+        SILVER_LEARNER_PROFILES,
+        ["user_id", "profile_updated_at"],
+    )
 
     version_window = Window.partitionBy("user_id").orderBy("profile_updated_at")
     current_window = Window.partitionBy("user_id").orderBy(F.col("profile_updated_at").desc())
@@ -224,7 +279,11 @@ def load_dim_learner(spark: SparkSession) -> None:
 
 def load_dim_topic(spark: SparkSession) -> None:
     logger.info("Stage start | dim_topic")
-    taxonomy_df = spark.table(SILVER_CONTENT_TAXONOMY)
+    taxonomy_df = silver_source_df(
+        spark,
+        SILVER_CONTENT_TAXONOMY,
+        ["taxonomy_id"],
+    )
     active_taxonomy_df = taxonomy_df.filter(
         (F.col("is_active") == True) & F.col("validation_status").isin("approved", "pending")
     )
@@ -388,7 +447,11 @@ def load_dim_content_type(spark: SparkSession) -> None:
 def load_dim_reference_source(spark: SparkSession) -> None:
     logger.info("Stage start | dim_reference_source")
     reference_df = (
-        spark.table(SILVER_REFERENCE_MATERIALS)
+        silver_source_df(
+            spark,
+            SILVER_REFERENCE_MATERIALS,
+            ["reference_id"],
+        )
         .filter(F.col("is_active") == True)
         .select(
             "reference_id",

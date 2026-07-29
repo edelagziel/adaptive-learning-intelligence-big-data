@@ -40,6 +40,9 @@ BRONZE_QUESTION_BANK_TABLE = "demo.bronze.question_bank"
 BRONZE_REFERENCE_MATERIALS_TABLE = "demo.bronze.reference_materials"
 BRONZE_LEARNING_FEEDBACK_TABLE = "demo.bronze.learning_feedback"
 BRONZE_LEARNING_EVENTS_TABLE = "demo.bronze.learning_events"
+BRONZE_QUARANTINE_TABLE = "demo.quality.bronze_quarantine"
+OPEN_STATUS = "OPEN"
+NULL_PLACEHOLDER = "__NULL__"
 
 # ---------------------------------------------------------------------------
 # Silver target tables
@@ -449,15 +452,71 @@ def normalize_text(column_name: str) -> F.Column:
     return normalize_column(F.col(column_name))
 
 
+def build_record_id_expr(columns: Sequence[str]) -> F.Column:
+    return F.concat_ws(
+        "||",
+        *[
+            F.coalesce(F.col(column).cast("string"), F.lit(NULL_PLACEHOLDER))
+            for column in columns
+        ],
+    )
+
+
+def bronze_source_df(
+    spark: SparkSession,
+    source_table: str,
+    record_id_columns: Sequence[str],
+) -> DataFrame:
+    source_df = spark.table(source_table)
+    scoped_count = source_df.count()
+    open_quarantine_df = (
+        spark.table(BRONZE_QUARANTINE_TABLE)
+        .filter(
+            (F.col("source_table") == source_table)
+            & (F.col("quarantine_status") == OPEN_STATUS)
+        )
+        .select(F.col("record_id").alias("_quality_record_id"))
+        .distinct()
+    )
+    clean_df = (
+        source_df
+        .withColumn("_quality_record_id", build_record_id_expr(record_id_columns))
+        .join(open_quarantine_df, "_quality_record_id", "left_anti")
+        .drop("_quality_record_id")
+    )
+    clean_count = clean_df.count()
+    logger.info(
+        "Bronze quarantine exclusion | table=%s scoped_rows=%s open_quarantined_rows=%s valid_rows=%s",
+        source_table,
+        scoped_count,
+        scoped_count - clean_count,
+        clean_count,
+    )
+    if scoped_count > 0 and clean_count == 0:
+        logger.warning(
+            "Bronze quarantine exclusion left zero valid rows | table=%s",
+            source_table,
+        )
+    return clean_df
+
+
 def parsed_learning_feedback(spark: SparkSession) -> DataFrame:
-    return spark.table(BRONZE_LEARNING_FEEDBACK_TABLE).withColumn(
+    return bronze_source_df(
+        spark,
+        BRONZE_LEARNING_FEEDBACK_TABLE,
+        ["feedback_id"],
+    ).withColumn(
         "payload",
         F.from_json(F.col("raw_payload"), LEARNING_FEEDBACK_PAYLOAD_SCHEMA),
     )
 
 
 def transform_learner_profiles(spark: SparkSession) -> DataFrame:
-    bronze_df = spark.table(BRONZE_LEARNER_PROFILES_TABLE)
+    bronze_df = bronze_source_df(
+        spark,
+        BRONZE_LEARNER_PROFILES_TABLE,
+        ["user_id", "profile_updated_at"],
+    )
     logger.info(
         "%s row count: %s",
         BRONZE_LEARNER_PROFILES_TABLE,
@@ -494,7 +553,11 @@ def transform_learner_profiles(spark: SparkSession) -> DataFrame:
 
 
 def transform_question_bank(spark: SparkSession) -> DataFrame:
-    bronze_df = spark.table(BRONZE_QUESTION_BANK_TABLE)
+    bronze_df = bronze_source_df(
+        spark,
+        BRONZE_QUESTION_BANK_TABLE,
+        ["question_id", "question_version"],
+    )
     logger.info("%s row count: %s", BRONZE_QUESTION_BANK_TABLE, bronze_df.count())
     parsed_df = bronze_df.withColumn(
         "payload",
@@ -528,7 +591,11 @@ def transform_question_bank(spark: SparkSession) -> DataFrame:
 
 
 def transform_reference_materials(spark: SparkSession) -> DataFrame:
-    bronze_df = spark.table(BRONZE_REFERENCE_MATERIALS_TABLE)
+    bronze_df = bronze_source_df(
+        spark,
+        BRONZE_REFERENCE_MATERIALS_TABLE,
+        ["reference_id"],
+    )
     logger.info(
         "%s row count: %s",
         BRONZE_REFERENCE_MATERIALS_TABLE,
@@ -575,7 +642,11 @@ def transform_reference_materials(spark: SparkSession) -> DataFrame:
 
 
 def transform_learning_events(spark: SparkSession) -> DataFrame:
-    bronze_df = spark.table(BRONZE_LEARNING_EVENTS_TABLE)
+    bronze_df = bronze_source_df(
+        spark,
+        BRONZE_LEARNING_EVENTS_TABLE,
+        ["event_id"],
+    )
     logger.info("%s row count: %s", BRONZE_LEARNING_EVENTS_TABLE, bronze_df.count())
     selected_df = (
         bronze_df
@@ -598,6 +669,7 @@ def transform_learning_events(spark: SparkSession) -> DataFrame:
     )
     return (
         selected_df
+        .filter(F.col("event_type") == "ai_learning_interaction")
         .withColumn("payload_valid", F.col("parsed_payload").isNotNull())
         .withColumn(
             "processing_status",
@@ -610,7 +682,11 @@ def transform_learning_events(spark: SparkSession) -> DataFrame:
 
 
 def transform_practice_attempts(spark: SparkSession) -> DataFrame:
-    bronze_df = spark.table(BRONZE_LEARNING_EVENTS_TABLE)
+    bronze_df = bronze_source_df(
+        spark,
+        BRONZE_LEARNING_EVENTS_TABLE,
+        ["event_id"],
+    )
     question_df = spark.table(SILVER_QUESTION_BANK_TABLE).select(
         "question_id",
         "question_version",
@@ -621,7 +697,7 @@ def transform_practice_attempts(spark: SparkSession) -> DataFrame:
 
     practice_events_df = (
         bronze_df
-        .filter(F.col("event_type") == "practice_submitted")
+        .filter(F.lower(F.trim(F.col("event_type"))) == "practice_submitted")
         .withColumn(
             "parsed_payload",
             F.from_json(F.col("raw_payload"), LEARNING_EVENT_PAYLOAD_SCHEMA),
@@ -837,11 +913,15 @@ def transform_learner_check_in_topics(spark: SparkSession) -> DataFrame:
 
 
 def transform_ai_extracted_insights(spark: SparkSession) -> DataFrame:
-    bronze_df = spark.table(BRONZE_LEARNING_EVENTS_TABLE)
+    bronze_df = bronze_source_df(
+        spark,
+        BRONZE_LEARNING_EVENTS_TABLE,
+        ["event_id"],
+    )
     logger.info("%s row count: %s", BRONZE_LEARNING_EVENTS_TABLE, bronze_df.count())
     ai_interactions_df = (
         bronze_df
-        .filter(F.col("event_type") == "ai_learning_interaction")
+        .filter(F.lower(F.trim(F.col("event_type"))) == "ai_learning_interaction")
         .withColumn(
             "parsed_payload",
             F.from_json(F.col("raw_payload"), LEARNING_EVENT_PAYLOAD_SCHEMA),

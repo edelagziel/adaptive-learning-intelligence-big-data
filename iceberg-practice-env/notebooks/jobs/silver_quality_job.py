@@ -45,6 +45,8 @@ LEARNER_CONCEPT_EVIDENCE_TABLE = "demo.silver.learner_concept_evidence"
 
 QUALITY_RESULTS_TABLE = "demo.quality.silver_quality_results"
 QUARANTINE_TABLE = "demo.quality.silver_quarantine"
+BRONZE_LEARNING_EVENTS_TABLE = "demo.bronze.learning_events"
+BRONZE_QUARANTINE_TABLE = "demo.quality.bronze_quarantine"
 
 STATUS_PASS = "PASS"
 STATUS_WARNING = "WARNING"
@@ -135,6 +137,40 @@ def build_record_id_expr(columns: Sequence[str]) -> F.Column:
     )
 
 
+def bronze_learning_events_source_df(spark: SparkSession) -> DataFrame:
+    source_df = spark.table(BRONZE_LEARNING_EVENTS_TABLE)
+    scoped_count = source_df.count()
+    open_quarantine_df = (
+        spark.table(BRONZE_QUARANTINE_TABLE)
+        .filter(
+            (F.col("source_table") == BRONZE_LEARNING_EVENTS_TABLE)
+            & (F.col("quarantine_status") == OPEN_STATUS)
+        )
+        .select(F.col("record_id").alias("_quality_record_id"))
+        .distinct()
+    )
+    clean_df = (
+        source_df
+        .withColumn("_quality_record_id", build_record_id_expr(["event_id"]))
+        .join(open_quarantine_df, "_quality_record_id", "left_anti")
+        .drop("_quality_record_id")
+    )
+    clean_count = clean_df.count()
+    logger.info(
+        "Bronze quarantine exclusion for Silver quality | table=%s scoped_rows=%s open_quarantined_rows=%s valid_rows=%s",
+        BRONZE_LEARNING_EVENTS_TABLE,
+        scoped_count,
+        scoped_count - clean_count,
+        clean_count,
+    )
+    if scoped_count > 0 and clean_count == 0:
+        logger.warning(
+            "Bronze quarantine exclusion left zero valid rows for Silver quality | table=%s",
+            BRONZE_LEARNING_EVENTS_TABLE,
+        )
+    return clean_df
+
+
 def duplicate_rows(df: DataFrame, keys: Sequence[str]) -> DataFrame:
     duplicate_keys_df = (
         df.groupBy(*keys)
@@ -217,7 +253,11 @@ def evaluate_rule(
     failed_rows = failed_df.count()
     status = status_for(failed_rows, severity)
     action_taken = action_for(failed_rows, severity, supports_quarantine)
-    has_critical_failure = severity == SEVERITY_CRITICAL and failed_rows > 0
+    has_critical_failure = (
+        severity == SEVERITY_CRITICAL
+        and failed_rows > 0
+        and not supports_quarantine
+    )
 
     quarantine_df = None
     quarantine_count = 0
@@ -777,13 +817,13 @@ def check_learning_events(
         quarantine_candidates,
     )
     rule_conditions = [
-        ("invalid_event_type", "event_type must be ai_learning_interaction or practice_submitted.", F.col("event_type").isNull() | ~F.col("event_type").isin("ai_learning_interaction", "practice_submitted"), SEVERITY_CRITICAL),
+        ("invalid_event_type", "event_type must be ai_learning_interaction for demo.silver.learning_events.", F.col("event_type").isNull() | (F.col("event_type") != "ai_learning_interaction"), SEVERITY_CRITICAL),
         ("invalid_event_date", "event_date must equal to_date(event_time).", F.col("event_date") != F.to_date(F.col("event_time")), SEVERITY_CRITICAL),
         ("invalid_event_hour", "event_hour must equal hour(event_time).", F.col("event_hour") != F.hour(F.col("event_time")), SEVERITY_CRITICAL),
         ("payload_not_valid", "payload_valid must be true.", F.col("payload_valid") != True, SEVERITY_CRITICAL),
         ("processing_not_processed", "processing_status must be processed.", F.col("processing_status") != "processed", SEVERITY_CRITICAL),
         ("ingestion_before_event_time", "ingestion_time is earlier than event_time.", F.col("ingestion_time") < F.col("event_time"), SEVERITY_CRITICAL),
-        ("source_system_mismatch_by_event_type", "source_system does not match event_type expectation.", ((F.col("event_type") == "ai_learning_interaction") & (F.col("source_system") != "chat")) | ((F.col("event_type") == "practice_submitted") & (F.col("source_system") != "practice_app")), SEVERITY_WARNING),
+        ("source_system_mismatch_by_event_type", "source_system does not match ai_learning_interaction expectation.", (F.col("event_type") == "ai_learning_interaction") & (F.col("source_system") != "chat"), SEVERITY_WARNING),
     ]
     for rule_name, details, condition, severity in rule_conditions:
         critical |= collect_rule(
@@ -823,7 +863,7 @@ def check_practice_attempts(
     source_table = PRACTICE_ATTEMPTS_TABLE
     logger.info("Checking table: %s", source_table)
     df = spark.table(source_table)
-    learning_events_df = spark.table(LEARNING_EVENTS_TABLE)
+    learning_events_df = bronze_learning_events_source_df(spark)
     question_bank_df = spark.table(QUESTION_BANK_TABLE)
     total_rows = df.count()
     logger.info("Total rows | table=%s total_rows=%s", source_table, total_rows)
@@ -904,14 +944,14 @@ def check_practice_attempts(
             total_rows,
             "missing_or_wrong_event_fk",
             SEVERITY_CRITICAL,
-            "practice_attempts.event_id must link to a practice_submitted learning event.",
+            "practice_attempts.event_id must link to a non-quarantined Bronze practice_submitted learning event.",
             lambda: df.alias("pa").join(
                 learning_events_df.alias("le"),
                 F.col("pa.event_id") == F.col("le.event_id"),
                 "left",
             ).filter(
                 F.col("le.event_id").isNull()
-                | (F.col("le.event_type") != "practice_submitted")
+                | (F.lower(F.trim(F.col("le.event_type"))) != "practice_submitted")
             ).select("pa.*"),
             key_cols,
         ),
@@ -1538,11 +1578,17 @@ def run_job(spark: SparkSession) -> int:
         fail_count,
     )
 
+    if fail_count > 0:
+        logger.warning(
+            "Silver row-level CRITICAL rules were detected and written as quarantine audit copies. "
+            "Successfully quarantined row-level failures are non-blocking for this job."
+        )
+
     if critical_fail_detected:
-        logger.error("Critical Silver quality failures detected. Exiting with code 1.")
+        logger.error("Non-quarantinable critical Silver quality failure detected. Exiting with code 1.")
         return 1
 
-    logger.info("No critical Silver quality failures detected. Exiting with code 0.")
+    logger.info("No blocking Silver quality failures detected. Exiting with code 0.")
     return 0
 
 

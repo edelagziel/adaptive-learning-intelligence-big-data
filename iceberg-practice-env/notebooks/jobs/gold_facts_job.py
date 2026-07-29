@@ -27,6 +27,9 @@ SILVER_CHECK_IN_TOPICS = "demo.silver.learner_check_in_topics"
 SILVER_AI_INSIGHTS = "demo.silver.ai_extracted_insights"
 SILVER_VALIDATED_INSIGHTS = "demo.silver.validated_learning_insights"
 SILVER_CONCEPT_EVIDENCE = "demo.silver.learner_concept_evidence"
+SILVER_QUARANTINE_TABLE = "demo.quality.silver_quarantine"
+OPEN_STATUS = "OPEN"
+NULL_PLACEHOLDER = "__NULL__"
 
 DIM_LEARNER = "demo.gold.dim_learner"
 DIM_TOPIC = "demo.gold.dim_topic"
@@ -58,6 +61,54 @@ def key_is_present(columns: Sequence[str]) -> F.Column:
 
 def stable_row_hash(columns: Sequence[str]) -> F.Column:
     return F.sha2(F.to_json(F.struct(*[F.col(column) for column in columns])), 256)
+
+
+def build_record_id_expr(columns: Sequence[str]) -> F.Column:
+    return F.concat_ws(
+        "||",
+        *[
+            F.coalesce(F.col(column).cast("string"), F.lit(NULL_PLACEHOLDER))
+            for column in columns
+        ],
+    )
+
+
+def silver_source_df(
+    spark: SparkSession,
+    source_table: str,
+    record_id_columns: Sequence[str],
+) -> DataFrame:
+    source_df = spark.table(source_table)
+    scoped_count = source_df.count()
+    open_quarantine_df = (
+        spark.table(SILVER_QUARANTINE_TABLE)
+        .filter(
+            (F.col("source_table") == source_table)
+            & (F.col("quarantine_status") == OPEN_STATUS)
+        )
+        .select(F.col("record_id").alias("_quality_record_id"))
+        .distinct()
+    )
+    clean_df = (
+        source_df
+        .withColumn("_quality_record_id", build_record_id_expr(record_id_columns))
+        .join(open_quarantine_df, "_quality_record_id", "left_anti")
+        .drop("_quality_record_id")
+    )
+    clean_count = clean_df.count()
+    logger.info(
+        "Silver quarantine exclusion | table=%s scoped_rows=%s open_quarantined_rows=%s valid_rows=%s",
+        source_table,
+        scoped_count,
+        scoped_count - clean_count,
+        clean_count,
+    )
+    if scoped_count > 0 and clean_count == 0:
+        logger.warning(
+            "Silver quarantine exclusion left zero valid rows | table=%s",
+            source_table,
+        )
+    return clean_df
 
 
 def valid_and_single_row(df: DataFrame, key_columns: Sequence[str], stage_name: str) -> DataFrame:
@@ -128,7 +179,11 @@ def current_dim_learner(spark: SparkSession) -> DataFrame:
 
 
 def build_fact_learning_interaction(spark: SparkSession, dim_learner_df: DataFrame) -> DataFrame:
-    learning_events_df = spark.table(SILVER_LEARNING_EVENTS)
+    learning_events_df = silver_source_df(
+        spark,
+        SILVER_LEARNING_EVENTS,
+        ["event_id"],
+    )
     return (
         learning_events_df.alias("e")
         .join(
@@ -152,8 +207,16 @@ def build_fact_learning_interaction(spark: SparkSession, dim_learner_df: DataFra
 
 
 def build_fact_practice_attempt(spark: SparkSession, dim_learner_df: DataFrame, dim_topic_df: DataFrame) -> DataFrame:
-    practice_attempts_df = spark.table(SILVER_PRACTICE_ATTEMPTS)
-    question_bank_df = spark.table(SILVER_QUESTION_BANK)
+    practice_attempts_df = silver_source_df(
+        spark,
+        SILVER_PRACTICE_ATTEMPTS,
+        ["attempt_id"],
+    )
+    question_bank_df = silver_source_df(
+        spark,
+        SILVER_QUESTION_BANK,
+        ["question_id", "question_version"],
+    )
     question_topics_df = (
         question_bank_df.alias("q")
         .join(
@@ -251,10 +314,26 @@ def build_fact_learning_session(
 
 
 def build_fact_learning_feedback(spark: SparkSession, dim_learner_df: DataFrame, dim_topic_df: DataFrame) -> DataFrame:
-    pre_feedback_df = spark.table(SILVER_PRE_FEEDBACK)
-    post_feedback_df = spark.table(SILVER_POST_FEEDBACK)
-    check_in_df = spark.table(SILVER_CHECK_IN)
-    check_in_topics_df = spark.table(SILVER_CHECK_IN_TOPICS)
+    pre_feedback_df = silver_source_df(
+        spark,
+        SILVER_PRE_FEEDBACK,
+        ["feedback_id"],
+    )
+    post_feedback_df = silver_source_df(
+        spark,
+        SILVER_POST_FEEDBACK,
+        ["feedback_id"],
+    )
+    check_in_df = silver_source_df(
+        spark,
+        SILVER_CHECK_IN,
+        ["feedback_id"],
+    )
+    check_in_topics_df = silver_source_df(
+        spark,
+        SILVER_CHECK_IN_TOPICS,
+        ["feedback_id", "topic_id"],
+    )
 
     pre_feedback_fact_df = (
         pre_feedback_df.alias("f")
@@ -338,8 +417,16 @@ def build_fact_ai_insight_validation(
     dim_learner_df: DataFrame,
     dim_topic_df: DataFrame,
 ) -> DataFrame:
-    validated_insights_df = spark.table(SILVER_VALIDATED_INSIGHTS)
-    ai_insights_df = spark.table(SILVER_AI_INSIGHTS)
+    validated_insights_df = silver_source_df(
+        spark,
+        SILVER_VALIDATED_INSIGHTS,
+        ["validation_id"],
+    )
+    ai_insights_df = silver_source_df(
+        spark,
+        SILVER_AI_INSIGHTS,
+        ["insight_id"],
+    )
     dim_reference_source_df = spark.table(DIM_REFERENCE_SOURCE)
     topic_lookup_df = (
         dim_topic_df
@@ -379,7 +466,11 @@ def build_fact_learner_concept_state(
     dim_learner_df: DataFrame,
     dim_topic_df: DataFrame,
 ) -> DataFrame:
-    evidence_df = spark.table(SILVER_CONCEPT_EVIDENCE)
+    evidence_df = silver_source_df(
+        spark,
+        SILVER_CONCEPT_EVIDENCE,
+        ["evidence_id"],
+    )
     components_df = (
         evidence_df
         .groupBy("user_id", "taxonomy_id")
