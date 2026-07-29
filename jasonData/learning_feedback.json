@@ -1,0 +1,176 @@
+[
+  {
+    "feedback_id": "feedback_001",
+    "user_id": "user_001",
+    "session_id": "session_001",
+    "practice_id": "practice_001",
+    "feedback_stage": "before_practice",
+    "feedback_time": "2026-07-20T09:04:00Z",
+    "ingestion_time": "2026-07-20T09:04:03Z",
+    "raw_payload": {
+      "confidence_before_score": 4,
+      "perceived_understanding_before_score": 3,
+      "expected_difficulty_score": 8,
+      "free_text_before": "I am still confused about page faults and expect the practice to be difficult."
+    }
+  },
+  {
+    "feedback_id": "feedback_002",
+    "user_id": "user_001",
+    "session_id": "session_001",
+    "practice_id": "practice_001",
+    "feedback_stage": "after_practice",
+    "feedback_time": "2026-07-20T09:18:00Z",
+    "ingestion_time": "2026-07-20T09:22:00Z",
+    "raw_payload": {
+      "confidence_after_score": 5,
+      "perceived_understanding_after_score": 5,
+      "perceived_difficulty_score": 7,
+      "still_confused": true,
+      "free_text_after": "I understand the basic idea better, but I am still unsure about the handling steps."
+    }
+  },
+  {
+    "feedback_id": "feedback_003",
+    "user_id": "user_002",
+    "session_id": "session_002",
+    "practice_id": "practice_002",
+    "feedback_stage": "before_practice",
+    "feedback_time": "2026-07-21T11:04:00Z",
+    "ingestion_time": "2026-07-21T11:04:02Z",
+    "raw_payload": {
+      "confidence_before_score": 9,
+      "perceived_understanding_before_score": 9,
+      "expected_difficulty_score": 3,
+      "free_text_before": "I think I understand recursion well and expect this practice to be easy."
+    }
+  },
+  {
+    "feedback_id": "feedback_004",
+    "user_id": "user_002",
+    "session_id": "session_002",
+    "practice_id": "practice_002",
+    "feedback_stage": "after_practice",
+    "feedback_time": "2026-07-21T11:15:00Z",
+    "ingestion_time": "2026-07-21T11:25:00Z",
+    "raw_payload": {
+      "confidence_after_score": 5,
+      "perceived_understanding_after_score": 5,
+      "perceived_difficulty_score": 7,
+      "still_confused": true,
+      "free_text_after": "The questions were harder than I expected, especially the base-case question."
+    }
+  },
+  {
+    "feedback_id": "feedback_005",
+    "user_id": "user_003",
+    "session_id": "session_003",
+    "practice_id": "practice_003",
+    "feedback_stage": "before_practice",
+    "feedback_time": "2026-07-22T14:04:00Z",
+    "ingestion_time": "2026-07-22T14:04:03Z",
+    "raw_payload": {
+      "confidence_before_score": 7,
+      "perceived_understanding_before_score": 7,
+      "expected_difficulty_score": 4,
+      "free_text_before": "The visual explanation helped, so I feel fairly confident."
+    }
+  },
+  {
+    "feedback_id": "feedback_006",
+    "user_id": "user_003",
+    "session_id": "session_003",
+    "practice_id": "practice_003",
+    "feedback_stage": "after_practice",
+    "feedback_time": "2026-07-22T14:12:00Z",
+    "ingestion_time": "2026-07-22T14:13:30Z",
+    "raw_payload": {
+      "confidence_after_score": 9,
+      "perceived_understanding_after_score": 9,
+      "perceived_difficulty_score": 2,
+      "still_confused": false,
+      "free_text_after": "The diagram made the memory regions much easier to understand."
+    }
+  },
+  {
+    "feedback_id": "feedback_007",
+    "user_id": "user_001",
+    "session_id": "session_001",
+    "practice_id": null,
+    "feedback_stage": "general_check_in",
+    "feedback_time": "2026-07-23T18:00:00Z",
+    "ingestion_time": "2026-07-23T18:04:00Z",
+    "raw_payload": {
+      "overall_confidence_score": 5,
+      "overall_motivation_score": 6,
+      "overall_stress_score": 7,
+      "topics_feedback": [
+        {
+          "topic_id": "topic_virtual_memory",
+          "perceived_understanding_score": 4,
+          "confidence_score": 4,
+          "still_confused": true
+        },
+        {
+          "topic_id": "topic_recursion",
+          "perceived_understanding_score": 7,
+          "confidence_score": 7,
+          "still_confused": false
+        }
+      ],
+      "free_text": "I feel more comfortable with recursion, but virtual memory is still difficult."
+    }
+  },
+  {
+    "feedback_id": "feedback_008",
+    "user_id": "user_002",
+    "session_id": "session_002",
+    "practice_id": null,
+    "feedback_stage": "general_check_in",
+    "feedback_time": "2026-07-24T17:30:00Z",
+    "ingestion_time": "2026-07-24T17:33:00Z",
+    "raw_payload": {
+      "overall_confidence_score": 6,
+      "overall_motivation_score": 5,
+      "overall_stress_score": 6,
+      "topics_feedback": [
+        {
+          "topic_id": "topic_recursion",
+          "perceived_understanding_score": 5,
+          "confidence_score": 5,
+          "still_confused": true
+        }
+      ],
+      "free_text": "I thought I understood recursion better than I actually did."
+    }
+  },
+  {
+    "feedback_id": "feedback_009",
+    "user_id": "user_003",
+    "session_id": "session_003",
+    "practice_id": null,
+    "feedback_stage": "general_check_in",
+    "feedback_time": "2026-07-25T16:00:00Z",
+    "ingestion_time": "2026-07-25T16:02:00Z",
+    "raw_payload": {
+      "overall_confidence_score": 8,
+      "overall_motivation_score": 8,
+      "overall_stress_score": 3,
+      "topics_feedback": [
+        {
+          "topic_id": "topic_memory_layout",
+          "perceived_understanding_score": 9,
+          "confidence_score": 9,
+          "still_confused": false
+        },
+        {
+          "topic_id": "topic_virtual_memory",
+          "perceived_understanding_score": 6,
+          "confidence_score": 6,
+          "still_confused": false
+        }
+      ],
+      "free_text": "Visual explanations continue to help me understand technical topics."
+    }
+  }
+]

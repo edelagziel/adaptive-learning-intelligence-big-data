@@ -1,0 +1,116 @@
+[
+  {
+    "reference_id": "reference_001",
+    "batch_id": "batch_2026_07_20_001",
+    "source_type": "lecture_slides",
+    "source_name": "Operating Systems Course",
+    "file_name": "virtual_memory_lecture.pdf",
+    "import_time": "2026-07-18T10:00:00Z",
+    "ingestion_time": "2026-07-20T02:00:00Z",
+    "raw_payload": {
+      "title": "Page Fault Definition",
+      "domain": "Computer Science",
+      "topic": "Operating Systems",
+      "subtopic": "Virtual Memory",
+      "page_number": 14,
+      "content_text": "A page fault occurs when a process references a virtual page that is not currently present in physical memory. The operating system handles the fault and may load the required page from secondary storage.",
+      "author_or_owner": "Operating Systems Department",
+      "reliability_level": "official"
+    }
+  },
+  {
+    "reference_id": "reference_002",
+    "batch_id": "batch_2026_07_20_001",
+    "source_type": "lecture_slides",
+    "source_name": "Operating Systems Course",
+    "file_name": "virtual_memory_lecture.pdf",
+    "import_time": "2026-07-18T10:00:00Z",
+    "ingestion_time": "2026-07-20T02:00:00Z",
+    "raw_payload": {
+      "title": "Page Fault Handling Steps",
+      "domain": "Computer Science",
+      "topic": "Operating Systems",
+      "subtopic": "Virtual Memory",
+      "page_number": 15,
+      "content_text": "When a page fault occurs, the operating system checks whether the memory access is valid, locates the required page, loads it into a free frame or replaces another page, updates the page table, and resumes the interrupted process.",
+      "author_or_owner": "Operating Systems Department",
+      "reliability_level": "official"
+    }
+  },
+  {
+    "reference_id": "reference_003",
+    "batch_id": "batch_2026_07_20_001",
+    "source_type": "official_documentation",
+    "source_name": "Operating Systems Course Repository",
+    "file_name": "virtual_memory_notes.md",
+    "import_time": "2026-07-18T11:30:00Z",
+    "ingestion_time": "2026-07-20T02:00:00Z",
+    "raw_payload": {
+      "title": "Purpose of Virtual Memory",
+      "domain": "Computer Science",
+      "topic": "Operating Systems",
+      "subtopic": "Virtual Memory",
+      "section_name": "Virtual Address Spaces",
+      "content_text": "Virtual memory gives each process a logical address space that can be larger than the available physical memory. It also supports isolation between processes and allows memory pages to be loaded only when needed.",
+      "author_or_owner": "Operating Systems Course Staff",
+      "reliability_level": "official"
+    }
+  },
+  {
+    "reference_id": "reference_004",
+    "batch_id": "batch_2026_07_21_001",
+    "source_type": "lecture_summary",
+    "source_name": "Programming Fundamentals Course",
+    "file_name": "recursion_summary.docx",
+    "import_time": "2026-07-19T09:00:00Z",
+    "ingestion_time": "2026-07-21T02:00:00Z",
+    "raw_payload": {
+      "title": "Recursion and the Base Case",
+      "domain": "Computer Science",
+      "topic": "Programming",
+      "subtopic": "Recursion",
+      "section_name": "Base Case",
+      "content_text": "A recursive function calls itself to solve a smaller version of a problem. A base case defines the condition that stops further recursive calls. Without a reachable base case, the call stack may continue to grow until a stack overflow occurs.",
+      "author_or_owner": "Programming Course Staff",
+      "reliability_level": "approved"
+    }
+  },
+  {
+    "reference_id": "reference_005",
+    "batch_id": "batch_2026_07_21_001",
+    "source_type": "approved_solution",
+    "source_name": "Programming Fundamentals Course",
+    "file_name": "recursion_exercise_solution.pdf",
+    "import_time": "2026-07-19T09:30:00Z",
+    "ingestion_time": "2026-07-21T02:00:00Z",
+    "raw_payload": {
+      "title": "Recursion Compared with Iteration",
+      "domain": "Computer Science",
+      "topic": "Programming",
+      "subtopic": "Recursion",
+      "page_number": 3,
+      "content_text": "Recursion repeats work through function calls, while iteration repeats work through loops. Both approaches can solve repeated subproblems, but recursion uses the call stack and requires a stopping condition.",
+      "author_or_owner": "Programming Course Staff",
+      "reliability_level": "approved"
+    }
+  },
+  {
+    "reference_id": "reference_006",
+    "batch_id": "batch_2026_07_22_001",
+    "source_type": "lecture_slides",
+    "source_name": "Operating Systems Course",
+    "file_name": "process_memory_layout.pdf",
+    "import_time": "2026-07-20T13:00:00Z",
+    "ingestion_time": "2026-07-22T02:00:00Z",
+    "raw_payload": {
+      "title": "Process Memory Layout",
+      "domain": "Computer Science",
+      "topic": "Operating Systems",
+      "subtopic": "Process Memory Layout",
+      "page_number": 8,
+      "content_text": "A process memory image commonly contains code, data, heap, and stack regions. The heap stores dynamically allocated memory, while the stack stores function calls, local variables, and return information.",
+      "author_or_owner": "Operating Systems Department",
+      "reliability_level": "official"
+    }
+  }
+]

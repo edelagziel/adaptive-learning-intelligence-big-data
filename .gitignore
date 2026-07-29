@@ -1,0 +1,53 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Airflow runtime files
+airflow-practice-env/logs/
+airflow-practice-env/airflow.db
+airflow-practice-env/airflow-webserver.pid
+airflow-practice-env/standalone_admin_password.txt
+
+# Spark and streaming runtime data
+**/checkpoints/
+**/spark-warehouse/
+**/metastore_db/
+derby.log
+
+# Local Iceberg warehouse
+iceberg-practice-env/warehouse/
+
+# Generated model artifacts
+iceberg-practice-env/notebooks/models/
+
+# Converted temporary notebook exports
+iceberg-practice-env/notebooks/converted_scripts/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Operating system and editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

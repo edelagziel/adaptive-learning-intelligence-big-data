@@ -1,0 +1,54 @@
+[
+  {
+    "user_id": "user_001",
+    "profile_updated_at": "2026-07-01T08:00:00Z",
+    "ingestion_time": "2026-07-01T08:05:00Z",
+    "source_system": "application_database",
+    "raw_payload": {
+      "registration_date": "2026-07-01",
+      "preferred_language": "English",
+      "declared_background_level": "Beginner",
+      "learning_goal": "Improve understanding of operating systems",
+      "main_domain": "Computer Science"
+    }
+  },
+  {
+    "user_id": "user_001",
+    "profile_updated_at": "2026-07-23T18:10:00Z",
+    "ingestion_time": "2026-07-23T18:15:00Z",
+    "source_system": "application_database",
+    "raw_payload": {
+      "registration_date": "2026-07-01",
+      "preferred_language": "English",
+      "declared_background_level": "Intermediate",
+      "learning_goal": "Strengthen virtual memory and operating systems knowledge",
+      "main_domain": "Computer Science"
+    }
+  },
+  {
+    "user_id": "user_002",
+    "profile_updated_at": "2026-07-03T09:30:00Z",
+    "ingestion_time": "2026-07-03T09:35:00Z",
+    "source_system": "application_database",
+    "raw_payload": {
+      "registration_date": "2026-07-03",
+      "preferred_language": "English",
+      "declared_background_level": "Intermediate",
+      "learning_goal": "Improve programming fundamentals and recursion",
+      "main_domain": "Computer Science"
+    }
+  },
+  {
+    "user_id": "user_003",
+    "profile_updated_at": "2026-07-05T11:00:00Z",
+    "ingestion_time": "2026-07-05T11:04:00Z",
+    "source_system": "application_database",
+    "raw_payload": {
+      "registration_date": "2026-07-05",
+      "preferred_language": "English",
+      "declared_background_level": "Intermediate",
+      "learning_goal": "Learn technical concepts through visual explanations",
+      "main_domain": "Computer Science"
+    }
+  }
+]

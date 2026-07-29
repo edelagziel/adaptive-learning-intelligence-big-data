@@ -1,0 +1,183 @@
+[
+  {
+    "event_id": "evt_0001",
+    "user_id": "user_001",
+    "session_id": "session_001",
+    "event_type": "ai_learning_interaction",
+    "event_time": "2026-07-20T09:00:05Z",
+    "ingestion_time": "2026-07-20T09:00:08Z",
+    "source_system": "chat",
+    "raw_payload": {
+      "conversation_id": "conv_001",
+      "user_prompt": "I still do not understand why a page fault happens.",
+      "assistant_answer": "A page fault occurs when a process tries to access a page that is not currently loaded into physical memory.",
+      "conversation_summary": "The learner asked for a basic explanation of page faults.",
+      "important_points": [
+        "The requested page is not currently in physical memory",
+        "The operating system handles the fault",
+        "The page may be loaded from secondary storage"
+      ],
+      "detected_concepts": [
+        "Operating Systems",
+        "Virtual Memory",
+        "Page Fault"
+      ],
+      "learner_intent": "concept_explanation",
+      "possible_confusion": true,
+      "difficulty_indicators": [
+        "The learner explicitly stated that the concept was not understood"
+      ],
+      "processing_model": "synthetic_ai_analysis_v1"
+    }
+  },
+  {
+    "event_id": "evt_0002",
+    "user_id": "user_001",
+    "session_id": "session_001",
+    "event_type": "practice_submitted",
+    "event_time": "2026-07-20T09:12:00Z",
+    "ingestion_time": "2026-07-20T09:12:03Z",
+    "source_system": "practice_app",
+    "raw_payload": {
+      "practice_id": "practice_001",
+      "topic_id": "topic_virtual_memory",
+      "started_at": "2026-07-20T09:05:00Z",
+      "submitted_at": "2026-07-20T09:12:00Z",
+      "completion_status": "completed",
+      "answers": [
+        {
+          "question_id": "question_001",
+          "question_version": 1,
+          "selected_option_letter": "C",
+          "hints_used": 1,
+          "attempt_duration_seconds": 80
+        },
+        {
+          "question_id": "question_002",
+          "question_version": 1,
+          "selected_option_letter": "B",
+          "hints_used": 0,
+          "attempt_duration_seconds": 65
+        }
+      ]
+    }
+  },
+  {
+    "event_id": "evt_0003",
+    "user_id": "user_002",
+    "session_id": "session_002",
+    "event_type": "ai_learning_interaction",
+    "event_time": "2026-07-21T11:00:04Z",
+    "ingestion_time": "2026-07-21T11:00:07Z",
+    "source_system": "chat",
+    "raw_payload": {
+      "conversation_id": "conv_002",
+      "user_prompt": "I know recursion well, but can you explain the base case again?",
+      "assistant_answer": "The base case is the condition that stops recursive calls and prevents infinite recursion.",
+      "conversation_summary": "The learner requested clarification about the base case in recursion.",
+      "important_points": [
+        "A base case stops recursion",
+        "Without it, recursion may continue indefinitely"
+      ],
+      "detected_concepts": [
+        "Programming",
+        "Recursion",
+        "Base Case"
+      ],
+      "learner_intent": "clarification",
+      "possible_confusion": true,
+      "difficulty_indicators": [
+        "The learner requested a repeated explanation of one sub-concept"
+      ],
+      "processing_model": "synthetic_ai_analysis_v1"
+    }
+  },
+  {
+    "event_id": "evt_0004",
+    "user_id": "user_002",
+    "session_id": "session_002",
+    "event_type": "practice_submitted",
+    "event_time": "2026-07-21T11:11:00Z",
+    "ingestion_time": "2026-07-21T11:11:03Z",
+    "source_system": "practice_app",
+    "raw_payload": {
+      "practice_id": "practice_002",
+      "topic_id": "topic_recursion",
+      "started_at": "2026-07-21T11:05:00Z",
+      "submitted_at": "2026-07-21T11:11:00Z",
+      "completion_status": "completed",
+      "answers": [
+        {
+          "question_id": "question_003",
+          "question_version": 1,
+          "selected_option_letter": "A",
+          "hints_used": 0,
+          "attempt_duration_seconds": 35
+        },
+        {
+          "question_id": "question_004",
+          "question_version": 1,
+          "selected_option_letter": "D",
+          "hints_used": 0,
+          "attempt_duration_seconds": 40
+        }
+      ]
+    }
+  },
+  {
+    "event_id": "evt_0005",
+    "user_id": "user_003",
+    "session_id": "session_003",
+    "event_type": "ai_learning_interaction",
+    "event_time": "2026-07-22T14:00:05Z",
+    "ingestion_time": "2026-07-22T14:00:08Z",
+    "source_system": "chat",
+    "raw_payload": {
+      "conversation_id": "conv_003",
+      "user_prompt": "Can you explain this memory allocation diagram instead of using a long paragraph?",
+      "assistant_answer": "The diagram separates memory into stack, heap, data, and code regions.",
+      "conversation_summary": "The learner preferred a visual explanation of process memory layout.",
+      "important_points": [
+        "The stack stores function calls and local variables",
+        "The heap stores dynamically allocated memory",
+        "Code and data regions store instructions and global data"
+      ],
+      "detected_concepts": [
+        "Operating Systems",
+        "Process Memory",
+        "Memory Layout"
+      ],
+      "learner_intent": "visual_explanation",
+      "possible_confusion": false,
+      "difficulty_indicators": [
+        "The learner prefers visual content over long textual explanations"
+      ],
+      "processing_model": "synthetic_ai_analysis_v1"
+    }
+  },
+  {
+    "event_id": "evt_0006",
+    "user_id": "user_003",
+    "session_id": "session_003",
+    "event_type": "practice_submitted",
+    "event_time": "2026-07-22T14:08:00Z",
+    "ingestion_time": "2026-07-22T14:08:02Z",
+    "source_system": "practice_app",
+    "raw_payload": {
+      "practice_id": "practice_003",
+      "topic_id": "topic_memory_layout",
+      "started_at": "2026-07-22T14:05:00Z",
+      "submitted_at": "2026-07-22T14:08:00Z",
+      "completion_status": "completed",
+      "answers": [
+        {
+          "question_id": "question_005",
+          "question_version": 1,
+          "selected_option_letter": "B",
+          "hints_used": 0,
+          "attempt_duration_seconds": 30
+        }
+      ]
+    }
+  }
+]
