@@ -141,16 +141,24 @@ def run_spark_job(job_filename: str) -> None:
 with DAG(
     dag_id=DAG_ID,
     default_args=DEFAULT_ARGS,
-    schedule=None,
+    schedule="0 1 * * *",
     start_date=pendulum.datetime(2026, 1, 1, tz="Asia/Jerusalem"),
     catchup=False,
     max_active_runs=1,
     tags=["ali", "bronze", "ingestion", "airflow"],
+    doc_md="""
+    # ALI Batch Ingestion
+
+    Runs once daily at 01:00 Asia/Jerusalem to load batch source data into
+    Bronze. The task uses the shared `spark_iceberg_pool` to serialize local
+    Spark/Iceberg execution with setup, Kafka ingestion, and processing.
+    """,
 ) as dag:
     bronze_batch = PythonOperator(
         task_id="bronze_batch",
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "bronze_batch_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )

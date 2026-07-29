@@ -141,16 +141,24 @@ def run_spark_job(job_filename: str) -> None:
 with DAG(
     dag_id=DAG_ID,
     default_args=DEFAULT_ARGS,
-    schedule=None,
+    schedule="*/5 * * * *",
     start_date=pendulum.datetime(2026, 1, 1, tz="Asia/Jerusalem"),
     catchup=False,
     max_active_runs=1,
     tags=["ali", "kafka", "bronze", "airflow"],
+    doc_md="""
+    # ALI Kafka Ingestion
+
+    Drains available Kafka events into Bronze every 5 minutes using the
+    bounded `availableNow` Spark Structured Streaming job. The task uses the
+    shared `spark_iceberg_pool` to serialize local Spark/Iceberg execution.
+    """,
 ) as dag:
     kafka_to_bronze_streaming = PythonOperator(
         task_id="kafka_to_bronze_streaming",
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "kafka_to_bronze_streaming_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )

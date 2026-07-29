@@ -142,17 +142,26 @@ def run_spark_job(job_filename: str) -> None:
 with DAG(
     dag_id=DAG_ID,
     default_args=DEFAULT_ARGS,
-    schedule=None,
+    schedule="15 * * * *",
     start_date=pendulum.datetime(2026, 1, 1, tz="Asia/Jerusalem"),
     catchup=False,
     max_active_runs=1,
     tags=["ali", "processing", "spark", "iceberg", "airflow"],
+    doc_md="""
+    # ALI Processing Pipeline
+
+    Runs once per hour at minute 15, for example 01:15, 02:15, and 03:15,
+    over data already accumulated in Bronze. Every task uses the shared
+    `spark_iceberg_pool` to serialize local Spark/Iceberg execution with setup
+    and ingestion DAGs.
+    """,
 ) as dag:
     bronze_quality = PythonOperator(
         task_id="bronze_quality",
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "bronze_quality_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -161,6 +170,7 @@ with DAG(
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "silver_transform_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -169,6 +179,7 @@ with DAG(
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "late_arriving_feedback_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -177,6 +188,7 @@ with DAG(
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "silver_quality_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -185,6 +197,7 @@ with DAG(
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "gold_dimensions_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -193,6 +206,7 @@ with DAG(
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "gold_facts_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -201,6 +215,7 @@ with DAG(
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "gold_aggregations_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -209,6 +224,7 @@ with DAG(
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "gold_quality_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -217,6 +233,7 @@ with DAG(
         python_callable=run_spark_job,
         op_kwargs={"job_filename": "ml_training_job.py"},
         execution_timeout=ML_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 

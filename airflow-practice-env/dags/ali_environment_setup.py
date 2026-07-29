@@ -157,12 +157,20 @@ with DAG(
     catchup=False,
     max_active_runs=1,
     tags=["ali", "setup", "iceberg", "airflow"],
+    doc_md="""
+    # ALI Environment Setup
+
+    Manual-only setup DAG for ALI Iceberg namespaces, tables, and runtime
+    paths. Every task uses the shared `spark_iceberg_pool` so setup work is
+    serialized with local Spark/Iceberg ingestion and processing jobs.
+    """,
 ) as dag:
     setup_namespaces = PythonOperator(
         task_id="setup_namespaces",
         python_callable=run_spark_setup_job,
         op_kwargs={"job_filename": "setup_namespaces_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -171,6 +179,7 @@ with DAG(
         python_callable=run_spark_setup_job,
         op_kwargs={"job_filename": "setup_bronze_tables_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -179,6 +188,7 @@ with DAG(
         python_callable=run_spark_setup_job,
         op_kwargs={"job_filename": "setup_quality_tables_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -187,6 +197,7 @@ with DAG(
         python_callable=run_spark_setup_job,
         op_kwargs={"job_filename": "setup_silver_tables_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -195,6 +206,7 @@ with DAG(
         python_callable=run_spark_setup_job,
         op_kwargs={"job_filename": "setup_gold_tables_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -203,6 +215,7 @@ with DAG(
         python_callable=run_spark_setup_job,
         op_kwargs={"job_filename": "setup_ml_tables_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
@@ -211,6 +224,7 @@ with DAG(
         python_callable=run_python_setup_job,
         op_kwargs={"job_filename": "setup_runtime_paths_job.py"},
         execution_timeout=REGULAR_TASK_TIMEOUT,
+        pool="spark_iceberg_pool",
         do_xcom_push=False,
     )
 
